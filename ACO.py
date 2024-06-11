@@ -4,6 +4,9 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
 from sklearn import metrics
+from math import e
+from math import log
+
 
 class Formiga:
     def __init__(self):
@@ -58,20 +61,17 @@ class ACO:
         f = Formiga()
         return f
     
-    def calcularOmega(self, acuracia, nFormiga):
-        w = 1/
+    def calcularFerormonio(self, distancia, nFormiga):
+        w = (1/(1 + e**(-distancia + 0.45)) + 0.55)**17 + 3 * log(nFormiga, 10)
 
-    def calcularDecimais(self, vMax, vMin, indices):#indices = lista dos vertices
-        iAtual = indices[0]
-        valores = []
-        vAtual = 0
-        valores.append((vMax/3))
-        valores.append((-vMax/5))
-        valores.append((vMax/7))
-        valores.append((-vMax/11))
-        vInicial = vMax/2
-        escolhido = np.random.choice(indices[:-1], p=valores)
-        iAtual = escolhido
-        vAtual = vInicial + valores[indices.index(escolhido)]
-        while(iAtual != indices[-1]):
-            np.random.choice(indices, p=valores)
+    def calcularDecimais(self, vMax, vMin, indices, w):#indices = lista dos vertices
+        if(w == 0):
+            iAtual = indices[0]
+            valores = []
+            vAtual = 0
+            vInicial = vMax/2
+            escolhido = np.random.choice(indices[:-1], p=valores)
+            iAtual = escolhido
+            vAtual = vInicial + valores[indices.index(escolhido)]
+            while(iAtual != indices[-1]):
+                np.random.choice(indices, p=valores)
