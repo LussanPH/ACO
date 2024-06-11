@@ -1,6 +1,10 @@
 import numpy as np
 import random as rd
 from sklearn.model_selection import train_test_split
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+
 class Formiga:
     def __init__(self):
         self.alpha = rd.randint(1,3)
@@ -8,10 +12,25 @@ class Formiga:
         self.caminho = []
 
 class ACO:
-    def __init__(self, num, model):
+    def __init__(self, num, model, data):
         self.num = num
         self.model = model
+        self.data= pd.read_csv(data)
 
+    def gerarXy(self):
+        self.X = self.dados.iloc[:, :-1].values 
+        self.y = self.dados.iloc[:, -1].values 
+        self.X_treino, self.X_teste, self.y_treino, self.y_teste = train_test_split(self.X, self.y, test_size=0.3, random_state=1)
+
+    def avaliacao(self, trajeto):
+        if(self.model == 0):
+            tradutor = {7:"gini", 8:"entropy", 9:"log_loss"}
+            arvore = DecisionTreeClassifier(max_depth= int(trajeto[0]), criterion= tradutor[trajeto[1]], min_samples_split= trajeto[2])
+            arvore.fit(self.X_treino, self.y_treino)
+            previsao = arvore.predict(self.X_teste)
+            acuracia = metrics.accuracy_score(self.y_teste, previsao)    
+        return acuracia
+    
     def matrizAdj(self):
         if(self.model == 0):
             self.matadj = np.zeros((16, 16), dtype=np.float64)
@@ -39,20 +58,20 @@ class ACO:
         f = Formiga()
         return f
     
-    def calculoPorcentagem(self, fer, pos, f, c):#fer e pos são listas de ferormonios e distancias do vertice
-        lista = []
-        indices = []
-        for i in range(c):
-            soma += (pos[c]**f.alpha) * (fer[c]**f.beta)
-            lista.append(0)
-            indices.append(i)
-        for i in range(len(lista)):
-            p = ((pos[i]**f.alpha) * (fer[i]**f.beta))/2
-            lista[i] = p
-        escolhido = np.random.choice(indices, p=lista)
-        return escolhido
+    def calcularOmega(self, acuracia, nFormiga):
+        w = 1/
 
-        
-
-aco = ACO(1, 0)
-aco.matrizAdj()
+    def calcularDecimais(self, vMax, vMin, indices):#indices = lista dos vertices
+        iAtual = indices[0]
+        valores = []
+        vAtual = 0
+        valores.append((vMax/3))
+        valores.append((-vMax/5))
+        valores.append((vMax/7))
+        valores.append((-vMax/11))
+        vInicial = vMax/2
+        escolhido = np.random.choice(indices[:-1], p=valores)
+        iAtual = escolhido
+        vAtual = vInicial + valores[indices.index(escolhido)]
+        while(iAtual != indices[-1]):
+            np.random.choice(indices, p=valores)
