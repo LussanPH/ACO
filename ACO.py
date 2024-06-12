@@ -63,15 +63,39 @@ class ACO:
     
     def calcularFerormonio(self, distancia, nFormiga):
         w = (1/(1 + e**(-distancia + 0.45)) + 0.55)**17 + 3 * log(nFormiga, 10)
+        return w
 
-    def calcularDecimais(self, vMax, vMin, indices, w):#indices = lista dos vertices
-        if(w == 0):
-            iAtual = indices[0]
-            valores = []
-            vAtual = 0
-            vInicial = vMax/2
-            escolhido = np.random.choice(indices[:-1], p=valores)
-            iAtual = escolhido
-            vAtual = vInicial + valores[indices.index(escolhido)]
-            while(iAtual != indices[-1]):
-                np.random.choice(indices, p=valores)
+    def calcularRotaDecimais(self, vMax, vMin, linhaInicial, linha, nFormiga, formiga):#indices = lista dos vertices(colunas)
+        z = 0
+        a = 0
+        soma = 0
+        vAtual = vMax/2
+        caminho = []
+        indices = []
+        possibilidades = []
+        i = list(self.matadj[linhaInicial])
+        while(z != 16):
+            if(i[z] == 1):
+                indices.append(i.index(1, a))
+                a = indices[-1] + 1
+            z+=1
+        if(nFormiga > 10):    
+            for ind in indices:
+                self.matFer[linhaInicial][ind] = self.calcularFerormonio(self.matPos[linhaInicial][ind], nFormiga)
+        for ind in indices:
+            soma +=  (self.matFer[linhaInicial][ind]**formiga.alpha) * (self.matFer[linhaInicial][ind]**formiga.beta)
+        for ind in indices:
+            possibilidades.append(((self.matFer[linhaInicial][ind]**formiga.alpha) * (self.matFer[linhaInicial][ind]**formiga.beta))/soma)
+        escolhido = np.random.choice(indices, p=possibilidades)
+        print(possibilidades)
+        print(escolhido)
+        #até aqui ele escolhe um dos vértices que vai iniciar o ciclo demoniaco
+
+
+
+        
+            
+
+aco = ACO(10, 0, "heart.csv")
+aco.matrizAdj()
+aco.calcularRotaDecimais(150, 3, 1, 2, 1, aco.gerarFormiga())
