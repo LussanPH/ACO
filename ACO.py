@@ -65,31 +65,76 @@ class ACO:
         w = (1/(1 + e**(-distancia + 0.45)) + 0.55)**17 + 3 * log(nFormiga, 10)
         return w
 
-    def calcularRotaDecimais(self, vMax, vMin, linhaInicial, linha, nFormiga, formiga):#indices = lista dos vertices(colunas)
-        z = 0
-        a = 0
+    def calcularRotaDecimais(self, vMax, vMin, linha, formiga):#indices = lista dos vertices(colunas)
+        z = 0 #variavel para acessar cada coluna da linha
+        a = 0 #= para atualizar o ponto de partida do index e colocar os indices de forma correta
+        v = 0 #= para indicar que saiu do primeiro ciclo
+        u = 0 #= para indicar que chegou no vértice de saída
+        t = 0 #= Para utilizar o metodo de criar listas da matadj apenas uma vez
+        r = 0 #= Para ajudar na valorização do atributo
         soma = 0
         vAtual = vMax/2
+        escolhido = 0
         caminho = []
         indices = []
+        iS = []
+        linhaPercorrida = [] # Conjunto de cada aresta percorrida de cada vértice
         possibilidades = []
-        i = list(self.matadj[linhaInicial])
-        while(z != 16):
-            if(i[z] == 1):
-                indices.append(i.index(1, a))
-                a = indices[-1] + 1
-            z+=1
-        if(nFormiga > 10):    
-            for ind in indices:
-                self.matFer[linhaInicial][ind] = self.calcularFerormonio(self.matPos[linhaInicial][ind], nFormiga)
-        for ind in indices:
-            soma +=  (self.matFer[linhaInicial][ind]**formiga.alpha) * (self.matFer[linhaInicial][ind]**formiga.beta)
-        for ind in indices:
-            possibilidades.append(((self.matFer[linhaInicial][ind]**formiga.alpha) * (self.matFer[linhaInicial][ind]**formiga.beta))/soma)
-        escolhido = np.random.choice(indices, p=possibilidades)
-        print(possibilidades)
-        print(escolhido)
-        #até aqui ele escolhe um dos vértices que vai iniciar o ciclo demoniaco
+        tradutor = {2:0, 3:1, 4:2, 5:3, 6:4, 11:0, 12:1, 13:2, 14:3, 15:4}
+        while(v != 1 or u != 1):
+            if(v == 1 and len(caminho)< 2 or v==0):
+                i = list(self.matadj[linha])
+            else:
+                i = iS[tradutor[linha]]           
+            while(z != 16):
+                if(v == 0):
+                    linhaPercorrida.append(0)
+                if(i[z] == 1):
+                    indices.append(i.index(1, a))
+                    a = indices[-1] + 1
+                z+=1
+            if(linhaPercorrida[linha] == 0 and v == 1):
+                for ind in indices:
+                    percorridos.append(0)
+                linhaPercorrida.pop(linha)              
+                linhaPercorrida.insert(linha, percorridos)    
+            if(len(caminho) > 1):
+                vertice = linhaPercorrida[caminho[-2]]
+                vertice[tradutor[linha]] += 1
+            print(linhaPercorrida)    
+            percorridos = []
+            if(iS != []):
+                if(vertice[tradutor[linha]] == 3):
+                    i[linha] = 0
+                    indices.remove(linha)
+            while(vMin >= vAtual or vAtual >= vMax or r == 0):#PAREI AQUI ADICIONAR A VALORIZAÇÃO DO ATRIBUTO NESSE WHILE              
+                for ind in indices:
+                    soma +=  (self.matFer[linha][ind]**formiga.alpha) * (self.matPos[linha][ind]**formiga.beta)
+                for ind in indices:
+                    possibilidades.append(((self.matFer[linha][ind]**formiga.alpha) * (self.matPos[linha][ind]**formiga.beta))/soma)        
+                escolhido = np.random.choice(indices, p=possibilidades)
+                r+=1
+            caminho.append(escolhido)
+            linha = caminho[-1]
+            if(t == 0 and v == 1):
+                for i in indices:
+                    iS.append(list(self.matadj[i])) 
+                t+=1
+            if(escolhido == indices[-1] and v == 1):
+                u = 1
+            else:
+                indices.clear()   
+            possibilidades.clear()
+            z = 0
+            a = 0
+            soma = 0
+            r = 0
+            print(escolhido)
+            if(v == 0):
+                v+=1
+        return None #uma lista contendo o caminho e o valor final do atributo       
+
+        
 
 
 
@@ -98,4 +143,4 @@ class ACO:
 
 aco = ACO(10, 0, "heart.csv")
 aco.matrizAdj()
-aco.calcularRotaDecimais(150, 3, 1, 2, 1, aco.gerarFormiga())
+aco.calcularRotaDecimais(150, 3, 1, aco.gerarFormiga())
