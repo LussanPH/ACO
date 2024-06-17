@@ -11,7 +11,6 @@ from math import log
 class Formiga:
     def __init__(self):
         self.alpha = rd.randint(1,3)
-        self.caminho = []
 
 class ACO:
     def __init__(self, num, model, data):
@@ -55,7 +54,7 @@ class ACO:
         w = (1/(1 + e**(-distancia + 0.45)) + 0.55)**17 + 3 * log(nFormiga, 10)
         return w
 
-    def calcularRotaDecimais(self, vMax, vMin, linha, formiga):#indices = lista dos vertices(colunas)
+    def calcularRotaDecimais(self, vMax, vMin, linha, formiga):
         z = 0 #variavel para acessar cada coluna da linha
         a = 0 #= para atualizar o ponto de partida do index e colocar os indices de forma correta
         v = 0 #= para indicar que saiu do primeiro ciclo
@@ -94,10 +93,7 @@ class ACO:
             percorridos = []
             if(iS != []):
                 if(vertice[tradutor[linha]] == 3):
-                    i[linha] = 0
-                    print(indices)
-                    indices.remove(linha)
-                    print(indices)
+                    iS[tradutor[caminho[-2]]][linha] = 0
             while(vMin >= vAtual or vAtual >= vMax or r == 0):
                 if(r == 1):
                     vAtual = antigo            
@@ -106,16 +102,16 @@ class ACO:
                 for ind in indices:
                     possibilidades.append(((self.matFer[linha][ind]**formiga.alpha))/soma)        
                 escolhido = np.random.choice(indices, p=possibilidades)
-                if(escolhido == 2):
+                if(escolhido == 2 or escolhido == 11):
                     antigo = vAtual
                     vAtual += -vMax/3
-                elif(escolhido == 3):
+                elif(escolhido == 3 or escolhido == 12):
                     antigo = vAtual
                     vAtual += -vMax/5
-                elif(escolhido == 4):
+                elif(escolhido == 4 or escolhido == 13):
                     antigo = vAtual
                     vAtual += vMax/7
-                elif(escolhido == 5):
+                elif(escolhido == 5 or escolhido == 14):
                     antigo = vAtual
                     vAtual += vMax/11
                 if(r == 0):    
@@ -126,7 +122,8 @@ class ACO:
             linha = caminho[-1]
             if(t == 0 and v == 1):
                 for i in indices:
-                    iS.append(list(self.matadj[i])) 
+                    if(i != 6):
+                        iS.append(list(self.matadj[i])) 
                 t+=1
             if(escolhido == indices[-1] and v == 1):
                 u = 1
@@ -168,12 +165,13 @@ class ACO:
 
     def caminharFormmiga(self):
         caminho = []
+        caminhosRealizados = []
         formigasEscolhas = []
         acuracias = []
         i = 1
         if(self.model == 0):
             atributos = []
-            while(self.num != i):
+            while(self.num + 1 != i):
                 f = self.gerarFormiga()
                 caminho.append(0)
                 caminho.append(1)
@@ -194,7 +192,7 @@ class ACO:
                 acuracias.append(self.avaliacao(atributos))
                 formigasEscolhas.append(str(i) + "-->")
                 formigasEscolhas.append(atributos)
-                print(lista2)
+                caminhosRealizados.append(caminho)
                 caminho = []
                 atributos = []
                 lista1 = []
@@ -202,9 +200,9 @@ class ACO:
                 lista3 = []
                 subLista1 = []
                 subLista3 = []
-                i+=1           
-
-
+                i+=1          
+            print(caminhosRealizados)
+#FALTA ATUALIZAR OS FEROMONIOS E A EVAPORAÇÃO
 
         
 
