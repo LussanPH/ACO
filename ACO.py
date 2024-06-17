@@ -53,6 +53,57 @@ class ACO:
     def calcularFerormonio(self, distancia, nFormiga):
         w = (1/(1 + e**(-distancia + 0.45)) + 0.55)**17 + 3 * log(nFormiga, 10)
         return w
+    
+    def formigasBobinhas(self):
+        i = 0
+        caminho = []
+        caminhosRealizados = []
+        formigasEscolhas = []
+        acuracias = []
+        atributos = []
+        ferormonios = []
+        if(self.model == 0):
+            while(i != 10):
+                f = self.gerarFormiga()
+                caminho.append(0)
+                caminho.append(1)
+                lista1 = self.calcularRotaDecimais(150, 3, caminho[-1], f)
+                atributos.append(lista1[1])
+                subLista1 = lista1[0]
+                for cam in subLista1:
+                    caminho.append(cam)
+                lista2 = self.calcularRotasNormais([0,1,2], f, caminho[-1])
+                atributos.append(lista2[1])
+                caminho.append(lista2[0])
+                caminho.append(10)
+                lista3 = self.calcularRotaDecimais(0.9, 0.1, caminho[-1], f)
+                atributos.append(lista3[1])
+                subLista3 = lista3[0]
+                for cam in subLista3:
+                    caminho.append(cam)    
+                acuracias.append(self.avaliacao(atributos))
+                formigasEscolhas.append(str(i) + "-->")
+                formigasEscolhas.append(atributos)
+                caminhosRealizados.append(caminho)
+                caminho = []
+                atributos = []
+                lista1 = []
+                lista2 = []
+                lista3 = []
+                subLista1 = []
+                subLista3 = []
+                ferormonios.append(int(self.calcularFerormonio(acuracias[i], i+1)))
+                i+=1
+            i = 0   
+            while(i != 10):
+                k=1
+                for j in caminhosRealizados[i]:
+                    if(j != 15):
+                        self.matFer[j][caminhosRealizados[i][k]] += ferormonios[i]
+                        k+=1
+                i+=1        
+            #FAZER EVAPORAÇÃO             
+                
 
     def calcularRotaDecimais(self, vMax, vMin, linha, formiga):
         z = 0 #variavel para acessar cada coluna da linha
@@ -169,8 +220,9 @@ class ACO:
         formigasEscolhas = []
         acuracias = []
         i = 1
+        atributos = []
         if(self.model == 0):
-            atributos = []
+            self.formigasBobinhas()
             while(self.num + 1 != i):
                 f = self.gerarFormiga()
                 caminho.append(0)
@@ -201,8 +253,6 @@ class ACO:
                 subLista1 = []
                 subLista3 = []
                 i+=1          
-            print(caminhosRealizados)
-#FALTA ATUALIZAR OS FEROMONIOS E A EVAPORAÇÃO
 
         
 
