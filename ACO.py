@@ -43,7 +43,7 @@ class ACO:
             floresta = RandomForestClassifier(n_estimators=int(trajeto[0]), max_depth=int(trajeto[1]), criterion=tradutor[trajeto[2]], min_samples_split=trajeto[3])
             floresta.fit(self.X_treino, self.y_treino)
             previsao = floresta.predict(self.X_teste)
-            self.acuracia1 = metrics.accuracy_score(self.y_teste, previsao)
+            acuracia = metrics.accuracy_score(self.y_teste, previsao)
         return acuracia
     
     def matrizAdj(self):
@@ -166,7 +166,55 @@ class ACO:
                         self.matFer[j][caminhosRealizados[i][k]] = self.matFer[j][caminhosRealizados[i][k]] * 0.9
                         k+=1
                 i+=1
-            print(self.matFer)                                            
+        elif(self.model == 2):
+            while(i != 10):
+                f = self.gerarFormiga()    
+                caminho.append(0)
+                caminho.append(1)
+                lista1 = self.calcularRotaDecimais(200, 3, caminho[-1], f)
+                atributos.append(lista1[1])
+                subLista1 = lista1[0]
+                for cam in subLista1:
+                    caminho.append(cam)
+                caminho.append(7)
+                lista2 = self.calcularRotaDecimais(150, 3, caminho[-1], f)
+                atributos.append(lista2[1])
+                subLista2 = lista2[0]
+                for cam in subLista2:
+                    caminho.append(cam)
+                lista3 = self.calcularRotasNormais([0, 1, 2], f, caminho[-1])
+                atributos.append(lista3[1])
+                caminho.append(lista3[0])
+                caminho.append(16)
+                lista4 = self.calcularRotaDecimais(0.9, 0.1, caminho[-1], f)
+                atributos.append(lista4[1])
+                subLista4 = lista4[0]
+                for cam in subLista4:
+                    caminho.append(cam)
+                acuracias.append(self.avaliacao(atributos))
+                formigasEscolhas.append(str(i) + "-->")
+                formigasEscolhas.append(atributos)
+                caminhosRealizados.append(caminho)
+                caminho = []
+                atributos = []
+                lista1 = []
+                lista2 = []
+                lista3 = []
+                lista4 = []
+                subLista1 = []
+                subLista2 = []
+                subLista4 = []
+                ferormonios.append(int(self.calcularFerormonio(acuracias[i], i+1)))
+                i+=1
+            i = 0   
+            while(i != 10):
+                k=1
+                for j in caminhosRealizados[i]:
+                    if(j != 21):
+                        self.matFer[j][caminhosRealizados[i][k]] += ferormonios[i]
+                        self.matFer[j][caminhosRealizados[i][k]] = self.matFer[j][caminhosRealizados[i][k]] * 0.9
+                        k+=1
+                i+=1        
 
     def calcularRotaDecimais(self, vMax, vMin, linha, formiga):
         z = 0 #variavel para acessar cada coluna da linha
@@ -184,18 +232,31 @@ class ACO:
         linhaPercorrida = [] # Conjunto de cada aresta percorrida de cada vértice
         possibilidades = []
         tradutor = {2:0, 3:1, 4:2, 5:3, 6:4, 11:0, 12:1, 13:2, 14:3, 15:4}
+        tradutor2 = {2:0, 3:1, 4:2, 5:3, 6:4, 8:0, 9:1, 10:2, 11:3, 12:4, 17:0, 18:1, 19:2, 20:3, 21:4}
         while(v != 1 or u != 1):
             if(v == 1 and len(caminho)< 2 or v==0):
                 i = list(self.matadj[linha])
             else:
-                i = iS[tradutor[linha]]           
-            while(z != 16):
-                if(v == 0):
-                    linhaPercorrida.append(0)
-                if(i[z] == 1):
-                    indices.append(i.index(1, a))
-                    a = indices[-1] + 1
-                z+=1
+                if(self.model == 0):
+                    i = iS[tradutor[linha]] 
+                else:
+                    i = iS[tradutor2[linha]]
+            if(self.model == 0):                      
+                while(z != 16):
+                    if(v == 0):
+                        linhaPercorrida.append(0)
+                    if(i[z] == 1):
+                        indices.append(i.index(1, a))
+                        a = indices[-1] + 1
+                    z+=1
+            else:
+                while(z != 22):
+                    if(v == 0):
+                        linhaPercorrida.append(0)
+                    if(i[z] == 1):
+                        indices.append(i.index(1, a))
+                        a = indices[-1] + 1
+                    z+=1        
             if(linhaPercorrida[linha] == 0 and v == 1):
                 for ind in indices:
                     percorridos.append(0)
@@ -203,11 +264,18 @@ class ACO:
                 linhaPercorrida.insert(linha, percorridos)    
             if(len(caminho) > 1):
                 vertice = linhaPercorrida[caminho[-2]]
-                vertice[tradutor[linha]] += 1   
+                if(self.model == 0):
+                    vertice[tradutor[linha]] += 1 
+                else:
+                    vertice[tradutor2[linha]] += 1      
             percorridos = []
             if(iS != []):
-                if(vertice[tradutor[linha]] == 3):
-                    iS[tradutor[caminho[-2]]][linha] = 0
+                if(self.model == 0):
+                    if(vertice[tradutor[linha]] == 3):
+                        iS[tradutor[caminho[-2]]][linha] = 0
+                elif(self.model == 2):
+                    if(vertice[tradutor2[linha]] == 3):
+                        iS[tradutor2[caminho[-2]]][linha] = 0        
             while(vMin >= vAtual or vAtual >= vMax or r == 0):
                 if(r == 1):
                     vAtual = antigo            
@@ -216,18 +284,32 @@ class ACO:
                 for ind in indices:
                     possibilidades.append(((self.matFer[linha][ind]**formiga.alpha))/soma)        
                 escolhido = np.random.choice(indices, p=possibilidades)
-                if(escolhido == 2 or escolhido == 11):
-                    antigo = vAtual
-                    vAtual += -vMax/3
-                elif(escolhido == 3 or escolhido == 12):
-                    antigo = vAtual
-                    vAtual += -vMax/5
-                elif(escolhido == 4 or escolhido == 13):
-                    antigo = vAtual
-                    vAtual += vMax/7
-                elif(escolhido == 5 or escolhido == 14):
-                    antigo = vAtual
-                    vAtual += vMax/11
+                if(self.model == 0):
+                    if(escolhido == 2 or escolhido == 11):
+                        antigo = vAtual
+                        vAtual += -vMax/3
+                    elif(escolhido == 3 or escolhido == 12):
+                        antigo = vAtual
+                        vAtual += -vMax/5
+                    elif(escolhido == 4 or escolhido == 13):
+                        antigo = vAtual
+                        vAtual += vMax/7
+                    elif(escolhido == 5 or escolhido == 14):
+                        antigo = vAtual
+                        vAtual += vMax/11
+                elif(self.model == 2):
+                    if(escolhido == 2 or escolhido == 8 or escolhido == 17):
+                        antigo = vAtual
+                        vAtual += -vMax/3
+                    elif(escolhido == 3 or escolhido == 9 or escolhido == 18):
+                        antigo = vAtual
+                        vAtual += -vMax/5
+                    elif(escolhido == 4 or escolhido == 10 or escolhido == 19):
+                        antigo = vAtual
+                        vAtual += vMax/7
+                    elif(escolhido == 5 or escolhido == 11 or escolhido == 20):
+                        antigo = vAtual
+                        vAtual += vMax/11        
                 if(r == 0):    
                     r+=1
                 soma = 0
@@ -236,8 +318,16 @@ class ACO:
             linha = caminho[-1]
             if(t == 0 and v == 1):
                 for i in indices:
-                    if(i != 6):
-                        iS.append(list(self.matadj[i])) 
+                    if(self.model == 0):
+                        if(i != 6):
+                            iS.append(list(self.matadj[i]))
+                    else:
+                        if(i != 6 and indices[-1] == 6):
+                            iS.append(list(self.matadj[i]))
+                        elif(i != 12 and indices[-1] == 12):
+                            iS.append(list(self.matadj[i]))
+                        elif(i != 21 and indices[-1] == 21):
+                            iS.append(list(self.matadj[i]))        
                 t+=1
             if(escolhido == indices[-1] and v == 1):
                 u = 1
@@ -261,7 +351,7 @@ class ACO:
         for j in i:
             if(j == 1):
                 indices.append(i.index(1, k))
-                k = indices[-1] + 1
+                k = indices[-1] + 1        
         for ind in indices:
             soma += (self.matFer[linha][ind]**formiga.alpha)
         for ind in indices:
@@ -353,17 +443,57 @@ class ACO:
                 atributos = []
                 lista1 = []
                 lista2 = []
-                i+=1           
-                 
-
-        
-#FINALIZAR FLORESTA
-
-
-        
+                i+=1  
+        elif(self.model == 2):
+            self.formigasBobinhas()
+            while(i != self.num):    
+                f = self.gerarFormiga()    
+                caminho.append(0)
+                caminho.append(1)
+                lista1 = self.calcularRotaDecimais(200, 3, caminho[-1], f)
+                atributos.append(lista1[1])
+                subLista1 = lista1[0]
+                for cam in subLista1:
+                    caminho.append(cam)
+                caminho.append(7)
+                lista2 = self.calcularRotaDecimais(150, 3, caminho[-1], f)
+                atributos.append(lista2[1])
+                subLista2 = lista2[0]
+                for cam in subLista2:
+                    caminho.append(cam)
+                lista3 = self.calcularRotasNormais([0, 1, 2], f, caminho[-1])
+                atributos.append(lista3[1])
+                caminho.append(lista3[0])
+                caminho.append(16)
+                lista4 = self.calcularRotaDecimais(0.9, 0.1, caminho[-1], f)
+                atributos.append(lista4[1])
+                subLista4 = lista4[0]
+                for cam in subLista4:
+                    caminho.append(cam)
+                acuracias.append(self.avaliacao(atributos))
+                formigasEscolhas.append(str(i) + "-->")
+                formigasEscolhas.append(atributos)
+                caminhosRealizados.append(caminho)
+                w = self.calcularFerormonio(acuracias[-1], i)
+                k=1
+                for j in caminho:
+                    if(j != 21):
+                        self.matFer[j][caminho[k]] += w
+                        self.matFer[j][caminho[k]] = self.matFer[j][caminho[k]] * 0.9
+                        k+=1
+                caminho = []
+                atributos = []
+                lista1 = []
+                lista2 = []
+                lista3 = []
+                lista4 = []
+                subLista1 = []
+                subLista2 = []
+                subLista4 = []
+                i+=1
+            print(acuracias)    
             
-
-aco = ACO(50, 2, "heart.csv")
+aco = ACO(100, 2, "heart.csv")
 aco.matrizAdj()
 aco.gerarXy()
 aco.caminharFormmiga()
