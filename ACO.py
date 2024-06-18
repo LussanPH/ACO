@@ -3,6 +3,8 @@ import random as rd
 from sklearn.model_selection import train_test_split
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn import metrics
 from math import e
 from math import log
@@ -29,22 +31,53 @@ class ACO:
             arvore = DecisionTreeClassifier(max_depth= int(trajeto[0]), criterion= tradutor[trajeto[1]], min_samples_split= trajeto[2])
             arvore.fit(self.X_treino, self.y_treino)
             previsao = arvore.predict(self.X_teste)
-            acuracia = metrics.accuracy_score(self.y_teste, previsao)    
+            acuracia = metrics.accuracy_score(self.y_teste, previsao)
+        elif(self.model == 1):
+            tradutor = {0:"uniform", 1:"distance"}
+            knn = KNeighborsClassifier(n_neighbors=trajeto[0], weights=tradutor[trajeto[1]])
+            knn.fit(self.X_treino, self.y_treino)
+            previsao = knn.predict(self.X_teste)
+            acuracia = metrics.accuracy_score(self.y_teste, previsao)
+        elif(self.model == 2):
+            tradutor = {0:"gini", 1:"entropy", 2:"log_loss"}
+            floresta = RandomForestClassifier(n_estimators=int(trajeto[0]), max_depth=int(trajeto[1]), criterion=tradutor[trajeto[2]], min_samples_split=trajeto[3])
+            floresta.fit(self.X_treino, self.y_treino)
+            previsao = floresta.predict(self.X_teste)
+            self.acuracia1 = metrics.accuracy_score(self.y_teste, previsao)
         return acuracia
     
     def matrizAdj(self):
         if(self.model == 0):
             self.matadj = np.zeros((16, 16), dtype=np.float64)
             self.matadj[0, 1], self.matadj[1, 2], self.matadj[1, 3], self.matadj[1, 4], self.matadj[1,5], self.matadj[2, 2], self.matadj[2, 3], self.matadj[2, 4], self.matadj[2, 5], self.matadj[2, 6], self.matadj[3,3], self.matadj[3,4], self.matadj[3,5], self.matadj[3,6], self.matadj[3, 2], self.matadj[4, 2], self.matadj[4, 3], self.matadj[4,4], self.matadj[4,5], self.matadj[4,6], self.matadj[5,2], self.matadj[5,3], self.matadj[5,4], self.matadj[5,5], self.matadj[5,6], self.matadj[6,7], self.matadj[6,8], self.matadj[6,9], self.matadj[7,10], self.matadj[8,10], self.matadj[9,10], self.matadj[10,11], self.matadj[10,12], self.matadj[10,13], self.matadj[10,14], self.matadj[11,11], self.matadj[11,12], self.matadj[11,13], self.matadj[11,14], self.matadj[11,15], self.matadj[12,11], self.matadj[12,12], self.matadj[12,13], self.matadj[12,14], self.matadj[12,15], self.matadj[13,11], self.matadj[13,12], self.matadj[13,13], self.matadj[13,14], self.matadj[13,15], self.matadj[14,11], self.matadj[14,12], self.matadj[14,13], self.matadj[14,14], self.matadj[14,15] = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-            self.matrizFer()                      
-
+            self.matrizFer()
+        elif(self.model == 1):
+            self.matadj = np.zeros((8, 8), dtype=np.float64)                           
+            self.matadj[0,1], self.matadj[0,2], self.matadj[0,3], self.matadj[0,4], self.matadj[1,5], self.matadj[1,6], self.matadj[2,5], self.matadj[2,6], self.matadj[3,5], self.matadj[3,6], self.matadj[4,5], self.matadj[4,6], self.matadj[5,7], self.matadj[6,7] = 1,1,1,1,1,1,1,1,1,1,1,1,1,1
+            self.matrizFer()
+        elif(self.model == 2):
+            self.matadj = np.zeros((22, 22), dtype=np.float64)
+            self.matadj[0,1], self.matadj[1,2], self.matadj[1,3], self.matadj[1,4], self.matadj[1,5], self.matadj[2,2], self.matadj[2,3], self.matadj[2,4], self.matadj[2,5], self.matadj[2,6], self.matadj[3,2], self.matadj[3,3], self.matadj[3,4], self.matadj[3,5], self.matadj[3,6], self.matadj[4,2], self.matadj[4,3], self.matadj[4,4], self.matadj[4,5], self.matadj[4,6], self.matadj[5,2], self.matadj[5,3], self.matadj[5,4], self.matadj[5,5], self.matadj[5,6], self.matadj[6,7], self.matadj[7,8], self.matadj[7,9], self.matadj[7,10], self.matadj[7,11], self.matadj[8,8], self.matadj[8,9], self.matadj[8,10], self.matadj[8,11],self.matadj[8,12], self.matadj[9,8], self.matadj[9,9], self.matadj[9,10], self.matadj[9,11], self.matadj[9,12], self.matadj[10,8], self.matadj[10,9], self.matadj[10,10], self.matadj[10,11], self.matadj[10,12], self.matadj[11,8], self.matadj[11,9], self.matadj[11,10], self.matadj[11,11], self.matadj[11,12], self.matadj[12,13], self.matadj[12,14], self.matadj[12,15], self.matadj[13,16], self.matadj[14,16], self.matadj[15,16], self.matadj[16,17], self.matadj[16,18], self.matadj[16,19], self.matadj[16,20], self.matadj[17,17], self.matadj[17,18], self.matadj[17,19], self.matadj[17,20], self.matadj[17,21], self.matadj[18,17], self.matadj[18,18], self.matadj[18,19], self.matadj[18,20], self.matadj[18,21], self.matadj[19,17], self.matadj[19,18], self.matadj[19,19], self.matadj[19,20], self.matadj[19,21], self.matadj[20,17], self.matadj[20,18], self.matadj[20,19], self.matadj[20,20], self.matadj[20,21] = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+            self.matrizFer()   
     def matrizFer(self):
-        self.matFer = np.zeros((16, 16), dtype=np.float64)
         if(self.model == 0):
+            self.matFer = np.zeros((16, 16), dtype=np.float64)
             for i in range(len(self.matadj)):
                 for j in range(len(self.matadj)):
                     if(self.matadj[i,j] == 1):
                         self.matFer[i, j] = 5 
+        elif(self.model == 1):
+            self.matFer = np.zeros((8, 8), dtype=np.float64)
+            for i in range(len(self.matadj)):
+                for j in range(len(self.matadj)):
+                    if(self.matadj[i,j] == 1):
+                        self.matFer[i, j] = 5
+        elif(self.model == 2):
+            self.matFer = np.zeros((22, 22), dtype=np.float64)
+            for i in range(len(self.matadj)):
+                for j in range(len(self.matadj)):
+                    if(self.matadj[i,j] == 1):
+                        self.matFer[i, j] = 5              
 
     def gerarFormiga(self):
         f = Formiga()
@@ -100,10 +133,40 @@ class ACO:
                 for j in caminhosRealizados[i]:
                     if(j != 15):
                         self.matFer[j][caminhosRealizados[i][k]] += ferormonios[i]
+                        self.matFer[j][caminhosRealizados[i][k]] = self.matFer[j][caminhosRealizados[i][k]] * 0.9
                         k+=1
-                i+=1        
-            #FAZER EVAPORAÇÃO             
-                
+                i+=1
+        elif(self.model == 1):
+            while(i != 10):
+                f = self.gerarFormiga()
+                caminho.append(0)
+                lista1 = self.calcularRotasNormais([3, 5, 7, 11], f, caminho[-1])
+                atributos.append(lista1[1])
+                caminho.append(lista1[0])
+                lista2 = self.calcularRotasNormais([0, 1], f, caminho[-1])
+                atributos.append(lista2[1])
+                caminho.append(lista2[0])
+                caminho.append(7)
+                acuracias.append(self.avaliacao(atributos))
+                formigasEscolhas.append(str(i) + "-->")
+                formigasEscolhas.append(atributos)
+                caminhosRealizados.append(caminho)
+                caminho = []
+                atributos = []
+                lista1 = []
+                lista2 = []
+                ferormonios.append(int(self.calcularFerormonio(acuracias[i], i+1)))
+                i+=1
+            i = 0   
+            while(i != 10):
+                k=1
+                for j in caminhosRealizados[i]:
+                    if(j != 7):
+                        self.matFer[j][caminhosRealizados[i][k]] += ferormonios[i]
+                        self.matFer[j][caminhosRealizados[i][k]] = self.matFer[j][caminhosRealizados[i][k]] * 0.9
+                        k+=1
+                i+=1
+            print(self.matFer)                                            
 
     def calcularRotaDecimais(self, vMax, vMin, linha, formiga):
         z = 0 #variavel para acessar cada coluna da linha
@@ -207,11 +270,14 @@ class ACO:
         if(escolhido == indices[0]):
             retorno = [escolhido, atributos[0]]
             return retorno
-        if(escolhido == indices[1]):
+        elif(escolhido == indices[1]):
             retorno = [escolhido, atributos[1]]
             return retorno  
-        if(escolhido == indices[2]):
+        elif(escolhido == indices[2]):
             retorno = [escolhido, atributos[2]]
+            return retorno
+        elif(escolhido == indices[3]):
+            retorno = [escolhido, atributos[3]]
             return retorno        
 
     def caminharFormmiga(self):
@@ -219,11 +285,11 @@ class ACO:
         caminhosRealizados = []
         formigasEscolhas = []
         acuracias = []
-        i = 1
+        i = 10
         atributos = []
         if(self.model == 0):
             self.formigasBobinhas()
-            while(self.num + 1 != i):
+            while(self.num != i):
                 f = self.gerarFormiga()
                 caminho.append(0)
                 caminho.append(1)
@@ -245,6 +311,13 @@ class ACO:
                 formigasEscolhas.append(str(i) + "-->")
                 formigasEscolhas.append(atributos)
                 caminhosRealizados.append(caminho)
+                w = self.calcularFerormonio(acuracias[-1], i)
+                k=1
+                for j in caminho:
+                    if(j != 15):
+                        self.matFer[j][caminho[k]] += w
+                        self.matFer[j][caminho[k]] = self.matFer[j][caminho[k]] * 0.9
+                        k+=1
                 caminho = []
                 atributos = []
                 lista1 = []
@@ -252,16 +325,45 @@ class ACO:
                 lista3 = []
                 subLista1 = []
                 subLista3 = []
-                i+=1          
+                i+=1
+        elif(self.model == 1):
+            self.formigasBobinhas()
+            while(i != self.num):
+                f = self.gerarFormiga()
+                caminho.append(0)
+                lista1 = self.calcularRotasNormais([3, 5, 7, 11], f, caminho[-1])
+                atributos.append(lista1[1])
+                caminho.append(lista1[0])
+                lista2 = self.calcularRotasNormais([0, 1], f, caminho[-1])
+                atributos.append(lista2[1])
+                caminho.append(lista2[0])
+                caminho.append(7)
+                acuracias.append(self.avaliacao(atributos))
+                formigasEscolhas.append(str(i) + "-->")
+                formigasEscolhas.append(atributos)
+                caminhosRealizados.append(caminho)
+                w = self.calcularFerormonio(acuracias[-1], i)
+                k=1
+                for j in caminho:
+                    if(j != 7):
+                        self.matFer[j][caminho[k]] += w
+                        self.matFer[j][caminho[k]] = self.matFer[j][caminho[k]] * 0.9
+                        k+=1
+                caminho = []
+                atributos = []
+                lista1 = []
+                lista2 = []
+                i+=1           
+                 
 
         
-
+#FINALIZAR FLORESTA
 
 
         
             
 
-aco = ACO(50, 0, "heart.csv")
+aco = ACO(50, 2, "heart.csv")
 aco.matrizAdj()
 aco.gerarXy()
 aco.caminharFormmiga()
